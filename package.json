@@ -1,0 +1,25 @@
+{
+  "name": "sharecal",
+  "version": "1.0.0",
+  "description": "TimeTree風のスケジュール共有アプリ",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crestam07-max/test.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/crestam07-max/test/issues"
+  },
+  "homepage": "https://github.com/crestam07-max/test#readme",
+  "dependencies": {
+    "express": "^4.22.3"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}
