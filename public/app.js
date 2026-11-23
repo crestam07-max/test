@@ -654,4 +654,9 @@ $('.close-sidebar').addEventListener('click', () => $('#sidebar').classList.remo
 // If the invite link is opened while logged out, nudge toward sign-up.
 if (!state.token && new URLSearchParams(location.search).has('invite')) setAuthMode('register');
 
+fetch('/api/config').then((r) => r.json()).then(({ demoNotice }) => {
+  $('#demo-notice').hidden = !demoNotice;
+  $('#demo-badge').hidden = !demoNotice;
+}).catch(() => {});
+
 boot();

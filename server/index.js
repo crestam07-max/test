@@ -7,6 +7,6 @@ const port = Number(process.env.PORT) || 3000;
 const dbFile = process.env.DB_FILE || path.join(__dirname, '..', 'data', 'app.db');
 if (dbFile !== ':memory:') fs.mkdirSync(path.dirname(dbFile), { recursive: true });
 
-createApp({ dbFile }).listen(port, () => {
+createApp({ dbFile, demoNotice: process.env.DEMO_NOTICE === '1' }).listen(port, () => {
   console.log(`Schedule sharing app running at http://localhost:${port}`);
 });

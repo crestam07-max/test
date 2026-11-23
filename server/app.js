@@ -45,9 +45,10 @@ const isoDate = (v, field) => {
   return new Date(v).toISOString();
 };
 
-function createApp({ dbFile = ':memory:' } = {}) {
+function createApp({ dbFile = ':memory:', demoNotice = false, authAttemptLimit = 20 } = {}) {
   const db = openDb(dbFile);
   const app = express();
+  app.set('trust proxy', 1); // behind the hosting provider's proxy
   app.use(express.json({ limit: '100kb' }));
 
   // ---------- realtime (Server-Sent Events) ----------
@@ -151,9 +152,30 @@ function createApp({ dbFile = ':memory:' } = {}) {
 
   const newInviteCode = () => crypto.randomBytes(6).toString('base64url');
 
+  // Slow down password guessing: limited auth attempts per IP per window.
+  const attempts = new Map();
+  function authLimit(req, _res, next) {
+    const now = Date.now();
+    let a = attempts.get(req.ip);
+    if (!a || a.reset < now) {
+      a = { count: 0, reset: now + 15 * 60 * 1000 };
+      attempts.set(req.ip, a);
+    }
+    if (++a.count > authAttemptLimit) {
+      return next(new HttpError(429, 'too many attempts, try again later'));
+    }
+    if (attempts.size > 10000) {
+      for (const [ip, v] of attempts) if (v.reset < now) attempts.delete(ip);
+    }
+    next();
+  }
+
   const api = express.Router();
 
-  api.post('/auth/register', (req, res) => {
+  api.get('/health', (_req, res) => res.json({ ok: true }));
+  api.get('/config', (_req, res) => res.json({ demoNotice }));
+
+  api.post('/auth/register', authLimit, (req, res) => {
     const name = str(req.body.name, { required: true, max: 50, field: 'name' });
     const email = str(req.body.email, { required: true, max: 200, field: 'email' }).toLowerCase();
     const password = req.body.password;
@@ -184,7 +206,7 @@ function createApp({ dbFile = ':memory:' } = {}) {
     res.status(201).json({ token: issueToken(user.id), user });
   });
 
-  api.post('/auth/login', (req, res) => {
+  api.post('/auth/login', authLimit, (req, res) => {
     const email = str(req.body.email, { required: true, field: 'email' }).toLowerCase();
     const password = typeof req.body.password === 'string' ? req.body.password : '';
     const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email);

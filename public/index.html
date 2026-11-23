@@ -12,6 +12,7 @@
     <div class="auth-card">
       <h1 class="logo">ShareCal</h1>
       <p class="tagline">みんなの予定を、ひとつのカレンダーで。</p>
+      <p class="demo-notice" id="demo-notice" hidden>お試し版です。しばらく誰も使わないと、アカウントや予定がリセットされます。</p>
       <div class="tabs" role="tablist">
         <button type="button" class="tab active" data-mode="login">ログイン</button>
         <button type="button" class="tab" data-mode="register">新規登録</button>
@@ -42,6 +43,7 @@
 
       <div class="sidebar-foot">
         <span id="me-name"></span>
+        <span class="demo-badge" id="demo-badge" hidden>お試し版</span>
         <button type="button" class="link" id="logout-btn">ログアウト</button>
       </div>
     </aside>

@@ -199,3 +199,21 @@ test('owner leaving hands over ownership; last member leaving deletes calendar',
   await call(`/calendars/${cal.id}/members/me`, { token: bob.token, method: 'DELETE' });
   assert.equal((await call(`/calendars/${cal.id}`, { token: bob.token })).status, 404);
 });
+
+test('auth endpoints are rate limited per IP', async () => {
+  const app = createApp({ authAttemptLimit: 3 });
+  const srv = app.listen(0);
+  await new Promise((r) => srv.once('listening', r));
+  const url = `http://127.0.0.1:${srv.address().port}/api/auth/login`;
+  const statuses = [];
+  for (let i = 0; i < 4; i++) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'x@example.com', password: 'wrong' }),
+    });
+    statuses.push(res.status);
+  }
+  srv.close();
+  assert.deepEqual(statuses, [401, 401, 401, 429]);
+});
